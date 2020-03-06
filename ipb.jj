@@ -1,0 +1,470 @@
+PARSER_BEGIN(ipb)
+import java.io.*;
+import java.lang.*;
+import java.util.*;
+import javax.swing.*;
+
+public class ipb{
+	static int error = 0;
+	static int linea = 1;
+	static String errores = "";
+	
+	public static void main(String args[]) throws ParseException {
+		 try{
+			ipb analizador = new ipb(System.in);
+			analizador.Programa();
+
+			if(error<= 0){
+				System.out.println("**Compilaci\u00F3n \u00C9xitosa**");
+			}else{
+				System.out.println("*N\u00FAmero de Errores: " + error+"*");
+				System.out.println(errores);
+			}
+		}
+		catch(ParseException e){
+			System.out.println(e.getMessage());
+			System.out.println("Analizador: se han encontrado errores en el analisis");
+			//System.out.println("Analyzer: errors have been found in the analysis");
+		}
+	}
+}
+PARSER_END(ipb)
+
+/**PALABRAS RESERVADAS*/
+TOKEN: 
+{
+	<NUEVA:  "new ">
+	|<VARIABLE: "let">
+	|<CONSTRUCTOR: "constructor">
+	|<THIS: "this">	
+	|<IMPRESION: "console.log">
+}
+
+/**	POO */
+TOKEN: 
+{
+	<CLASE:  "class">
+	|<HERENCIA: "extends">
+	|<INTERFACE: "interface">	
+}
+
+/** MODIFICADORES DE ACCESO */
+TOKEN: {
+	<PUBLIC: "public">
+	|<PRIVATE: "private">
+	|<PROTECTED: "protected">
+}
+
+TOKEN: /**ESTRUCTURAS CICLICAS Y CONDICIONALES*/
+{
+	<SI:  "if">
+	|<ELSE:  "else">
+	|<FOR:  "for">
+	|<FOREACH:  "foreach">
+	|<DO:  "do">
+	|<WHILE:  "while">
+	|<SWITCH:  "switch">
+	|<CASE:  "case">
+	|<BREAK:  "break">
+	|<DEFAULT:  "default">
+}
+
+/**TIPOS DE DATOS*/
+TOKEN:
+{
+	<BOOLEAN: "boolean">
+	|<ENTERO:  "number">
+	|<STRING: "string">
+	|<ANY: "any">
+	|<VOID: "void">
+	|<ARRAY: "Array">
+	|<UNDEFINED: "undefined">
+	|<NULL: "null">
+	|<ENUM: "enum">
+	|<OBJECT: "object">
+}
+
+/**OPERADORES LOGICOS Y ARITMETICOS*/
+TOKEN:
+{
+	<SUMA:  "+">
+	|<RESTA:  "-">
+	|<MULTIPLIC:  "*">
+	|<DIVIS:  "/">
+	|<MODULO:  "%">
+	|<AND:  "&&">
+	|<OR:  "||">
+	|<INCREMENTAR:  "++">
+	|<DECREMENTAR:  "--">
+}
+
+/**DELIMITADORES Y OPERADORES COMPARATIVOS*/
+TOKEN:
+{
+	<PARENT_IZQ:  "(">
+	|<PARENT_DER:  ")">
+	|<LLAVE_IZQ:  "{">
+	|<LLAVE_DER:  "}">
+	|<CORCH_IZQ:  "[">
+	|<CORCH_DER:  "]">
+	|<PUNTO_COMA:  ";">
+	|<DOS_PUNTOS:  ":">
+	|<PUNTO:  ".">
+	|<COMA:  ",">
+	|<ASIGNACION:  "=">
+	|<IGUAL:  "==">
+	|<MAYOR:  ">">
+	|<MENOR:  "<">
+	|<MAYOR_IGUAL:  ">=">
+	|<MENOR_IGUAL:  "<=">
+	|<DIF_QUE:  "!=">
+}
+
+/**NUMEROS Y CADENAS*/
+TOKEN:
+{
+   <NUMERO: (["0"-"9"])+ >
+   |<NUMERO_DECIMAL: (["0"-"9"])+ "." (["0"-"9"])* >
+   |<COMILLAS: "\"" >
+   |<IDENTIFICADOR: ["a"-"z","A"-"Z","Ñ"](["a"-"z","A"-"Z","0"-"9","_","ñ","Ñ"] | ("\u00e1") | ("\u00e9") | ("\u00ed") | ("\u00f3") | ("\u00fa") 
+   |("\u00c1") | ("\u00c9") | ("\u00cd") | ("\u00d3") | ("\u00da"))* >
+   |<CADENA: <COMILLAS> ["a"-"z","A"-"Z","0"-"9"," "]((["a"-"z","A"-"Z","0"-"9"," ",":",";",".","ñ"])|("¿")|("?")|("#")|("+")|("-")|("*")|("~")|("%")|("=")|("{")|("}")|("/")|("!")|("¡")|
+   ("<")|(">")|("\u00e1")|("\u00e9")|("\u00ed")|("\u00f3")|("\u00fa")|("\u00c1")|("\u00c9")|("\u00cd")|("\u00d3")|("\u00da"))*<COMILLAS> >//{System.out.println("CADENA-> "+image);} 
+   |<CARACTER :<COMILLAS>["a"-"z","A"-"Z","0"-"9"]<COMILLAS>>
+   |<BOOLEANO : "true" | "false">
+   
+}
+
+/*TABLA DE ERRORES LEXICOS*/
+TOKEN:
+{													  
+	<ERROR: ("&"|"%"|"¡"|"!"|"¬"|"#"|"$"|"%"|"?"|"¿"|"^")> {System.out.println(" " );}
+}
+
+/**ERRORES QUE SALTA DEL ANÁLISIS LÉXICO*/
+SKIP:
+{
+	" " | "\r" | "\t" | "\n"
+}
+
+//********************************AQUI EMPIEZA FASE SINTÁCTICA*******************************************
+/*CODIGOS UNICODES DE CARACTERES ACENTUADOS Y Ñ
+\u00C1 = Á. \u00E1 = á, \u00C9 = É, \u00E9 = é, \u00CD ´= Í, \u00ED = í, \u00D3 = Ó, \u00F3 = ó, \u00DA = Ú, \u00FA = ú, \u00D1 = Ñ, \u00F1 = ñ*/
+
+//METODO OPERADOR ARITMETICO
+void opreadorAritmetico() :
+{}
+{
+	<SUMA> | <RESTA> | <MULTIPLIC> | <DIVIS> | <MODULO>
+}
+
+//METODO RELACIONALES
+void operadorRelacional() :
+{}
+{
+	<IGUAL> | <MAYOR> | <MENOR> | <MAYOR_IGUAL> | <MENOR_IGUAL> | <DIF_QUE>
+}
+
+//METODO TIPO DE DATO
+void tipoDato() : 
+{}
+{
+	<BOOLEAN> | <ENTERO> | <STRING> | <ANY> | <VOID>
+	| <ARRAY> | <UNDEFINED> | <NULL> |<ENUM> | <OBJECT>
+}
+
+// METODO ESTRUCTURA GENERAL DEL PROGRAMA
+void Programa() :
+{
+	errores = "";
+}
+{
+	try{
+		//<PROGRAMA> <IDENTIFICADORMAIN> <LLAVE_IZQ> <PRINCIPAL> <LLAVE_IZQ> (cuerpo())* llaveder(0) llaveder(1)
+		(cuerpo())*
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00E1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Hubo un error en la estructura del PROGRAMA.\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != LLAVE_DER);
+	}
+}
+
+/*void err_main():
+{}{
+	
+	<ERROR>error_main()
+}
+*/
+
+// METODO LLAVE DERECHA 
+void llaveder(int S) :
+{}
+{
+	try{
+		 <LLAVE_DER>
+	}catch(ParseException ex){
+		error++;
+		if(S == 0)
+	  errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta cerrar la llave derecha '}' del metodo principal\n";
+		else if(S == 1)
+      errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta cerrar la llave derecha '}' del programa\n";
+		else if(S == 2)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta cerrar la llave derecha '}' del condicional SI\n"; 
+		else if(S == 3)
+			errores += "error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta cerrar la llave derecha '}' de condicional SINO\n"; 
+		else if(S == 4)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta cerrar la llave derecha '}' de condicional CASOS\n"; 
+		else if(S == 5)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta cerrar la llave derecha '}' del ciclo PARA\n"; 
+		else if(S == 6)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta cerrar la llave derecha del condicional MIENTRAS\n"; 
+	/*	else
+			errores += "Linea: " + ex.currentToken.beginLine + " Falta cerrar la llave del HACER\n"; //DO */
+	}
+}
+//METODO PUNTO Y COMA
+void puntocoma(int S) :
+{}
+{
+	try{
+		<PUNTO_COMA>
+	}catch(ParseException ex){
+		error++;
+		if(S == 0)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la SALIDA\n";
+		else if(S == 1)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la declaracion de LECTURA\n";
+		else if(S == 2)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la declaracion de variables\n";
+		else if(S == 3)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la asignaci\u00F3n de variables\n";
+		else if(S == 4)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la sentencia ROMPER\n";
+		else if(S == 5)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en el ciclo PARA\n";
+		else if(S == 6)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en el condicional HACER\n";
+	}
+}
+//METODO CUERPO DEL PROGRAMA
+void cuerpo() :
+{}
+{
+	salida() 
+	//| declararLectura() 
+	| declaracion() | asignacion() | condicionales() | ciclos() | <ERROR> {error++; 
+	errores+="¡Se encontró un Caracter Ilegal en el Programa!\n";}
+}
+//METODO SALIDA --------- IMPRESION EN PANTALLA
+void salida() : 
+{}
+{
+	try{
+		<IMPRESION> <PARENT_IZQ> (dato() | <PARENT_IZQ> operacion() <PARENT_DER>) (<SUMA> (dato() | <PARENT_IZQ> operacion() <PARENT_DER>))* <PARENT_DER> puntocoma(0)
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Hubo un error en la estructura de la SALIDA\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != PUNTO_COMA);
+	}
+}
+
+//METODO DATO
+void dato() : 
+{}
+{
+	<CADENA> | <NUMERO> | <NUMERO_DECIMAL> | func()
+}
+//METODO DATO SIN NUMERO
+void datoSinNum() :
+{}
+{
+	<CADENA>  | func()	
+}
+//METODO FUNCION DE LECTURA
+void func() :
+{}
+{
+	<IDENTIFICADOR> (<PUNTO> <IDENTIFICADOR> <PARENT_IZQ> (parametros())? <PARENT_DER>)?
+}
+//METODO PARAMETROS
+void parametros() :
+{}
+{
+	operacion() (<COMA> operacion())*
+}
+
+//METODO DE DECLARACION DE TIPO DE DATO
+void declaracion() :
+{}
+{
+	try{
+		<VARIABLE> <IDENTIFICADOR> <DOS_PUNTOS> tipo() (<ASIGNACION> operacion())? (<COMA> <IDENTIFICADOR> <DOS_PUNTOS> tipo() (<ASIGNACION> operacion())?)* puntocoma(2) 
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Hubo un error en la estructura de la declaracion de variables\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != PUNTO_COMA);
+	}
+}
+//METODO OPERACION
+void operacion() :
+{}
+{
+	operando() (operador() operando())*
+}
+//METODO OPERANDO
+void operando() :
+{}
+{
+	dato() | <PARENT_IZQ> operacion() <PARENT_DER>
+}
+
+//METODO ASIGNACION
+void asignacion() :
+{}
+{
+	try{
+		<IDENTIFICADOR> <ASIGNACION> operacion() (<COMA> <IDENTIFICADOR> <ASIGNACION> operacion())* puntocoma(3)
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+ ". Hubo un error en la estructura de la asignaci\u00F3n de variables\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != PUNTO_COMA);
+	}
+}
+//METODO CONDICIONALES
+void condicionales() : 
+{}
+{
+	condicionSI() | condicionCASO()
+}
+//METODO CONDICIONAL SI
+void condicionSI() : 
+{}
+{
+	try{
+		<SI> <PARENT_IZQ> condicion() <PARENT_DER> <LLAVE_IZQ> (cuerpo())* llaveder(2) (<SINO> <LLAVE_IZQ> (cuerpo())* llaveder(3))?
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn + ". Hubo un error en la estructura del condicional SI, se esperaba un '<'\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != LLAVE_DER);
+	}
+}
+//METODO OPERACION2
+void operacion2() : 
+{}
+{
+	operando2() (operador() operando2())*
+}
+//METODO OPERANDO2
+void operando2() :
+{}
+{
+	datoSinNum() | <PARENT_IZQ> operacion2() <PARENT_DER>	
+}
+//METODO PRECONDICION  CON OPERADORES RELACIONALES
+void preCondicion() :
+{}
+{
+	((<NUMERO> | <NUMERO_DECIMAL>) relacionales() operacion2()) | (operacion2() relacionales() (<NUMERO> | <NUMERO_DECIMAL>))
+}
+//METODO CONDICION
+void condicion() :
+{}
+{
+	preCondicion() (logicos() preCondicion())*
+}
+//METODO LOGICOS
+void logicos() :
+{}
+{
+	<Y> | <O>
+}
+
+
+//METODO CONDICION CASO
+void condicionCASO() : 
+{}
+{
+	try{
+		<CASOS> <PARENT_IZQ> operacion() <PARENT_DER> <LLAVE_IZQ> (<CASO> dato() <DOS_PUNTOS> (cuerpo())* <ROMPER> puntocoma(4))+ llaveder(4)
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+ ". Hubo un error en la condicional CASOS\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != LLAVE_DER);
+	}
+}
+
+//METODO CICLOS
+void ciclos() : 
+{}
+{
+	Cfor() | Cwhile() | Cdowhile()
+}
+// METODO CICLO PARA
+void Cfor() :
+{}
+{
+	try{
+		<FOR> <PARENT_IZQ> declaracion() condicion() puntocoma(5) aumento() (<COMA> aumento())* <PARENT_DER> <LLAVE_IZQ> (cuerpo())* llaveder(5)
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn+". Hubo un error en la estructura del ciclo PARA\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != LLAVE_DER);
+	}
+}
+//METODO CICLO MIENTRAS
+void Cwhile() :
+{}
+{
+	try{
+		<MIENTRAS> <PARENT_IZQ> condicion() <PARENT_DER> <LLAVE_IZQ> (cuerpo())* llaveder(6)
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+ ". Hubo un error en la estructura del condicional MIENTRAS\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != LLAVE_DER);
+	}
+}
+//METODO CICLO HACER-MIENTRAS
+void Cdowhile() :
+{}
+{
+	try{
+		<HACER> <LLAVE_IZQ> (cuerpo())* llaveder(7) <MIENTRAS> <PARENT_IZQ> condicion() <PARENT_DER> puntocoma(6)
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn+". Hubo un error en la estructura del condicional HACER-MIENTRAS\n";
+		Token token;
+		do{
+			token = getNextToken();
+		}while(token.kind != EOF && token.kind != LLAVE_DER);
+	}
+}
+//METODO AUMENTO INCREMENTOS Y DECREMENTOS
+void aumento() :
+{}
+{
+	((<RESTITA> | <ADICION>) <IDENTIFICADOR>) | (<IDENTIFICADOR> (<RESTITA> | <ADICION>))
+}
