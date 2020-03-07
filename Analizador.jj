@@ -1,51 +1,56 @@
-PARSER_BEGIN(ipb)
-import java.io.*;
-import java.lang.*;
-import java.util.*;
-import javax.swing.*;
+PARSER_BEGIN(Analizador)
+	import java.io.*;
+	import java.lang.*;
+	import java.util.*;
+	import javax.swing.*;
 
-public class ipb{
-	static int error = 0;
-	static int linea = 1;
-	static String errores = "";
-	
-	public static void main(String args[]) throws ParseException {
-		 try{
-			ipb analizador = new ipb(System.in);
-			analizador.Programa();
+	public class Analizador{
+		static int error = 0;
+		static int linea = 1;
+		static String errores = "";
+		
+		public static void main(String args[]) throws ParseException {
+			 try{
+				Analizador analizador = new Analizador(System.in);
+				analizador.Programa();
 
-			if(error<= 0){
-				System.out.println("**Compilaci\u00F3n \u00C9xitosa**");
-			}else{
-				System.out.println("*N\u00FAmero de Errores: " + error+"*");
-				System.out.println(errores);
+				if (error <= 0) {
+					System.out.println("**Compilaci\u00F3n \u00C9xitosa**");
+				} else {
+					System.out.println("*N\u00FAmero de Errores: " + error + "*");
+					System.out.println(errores);
+				}
+			} catch(ParseException e){
+				System.out.println(e.getMessage());
+				System.out.println("Analizador: se han encontrado errores en el analisis");
 			}
 		}
-		catch(ParseException e){
-			System.out.println(e.getMessage());
-			System.out.println("Analizador: se han encontrado errores en el analisis");
-			//System.out.println("Analyzer: errors have been found in the analysis");
-		}
 	}
-}
-PARSER_END(ipb)
+PARSER_END(Analizador)
 
 /**PALABRAS RESERVADAS*/
-TOKEN: 
-{
-	<NUEVA:  "new ">
-	|<VARIABLE: "let">
+TOKEN:  {
+	<NEW:  "new ">
+	|<LET: "let">
+	|<VAR: "var">
 	|<CONSTRUCTOR: "constructor">
 	|<THIS: "this">	
-	|<IMPRESION: "console.log">
+	|<CONSOLELOG: "console.log">
+	|<TRY: "try">
+	|<CATCH: "catch">
+	|<FINALLY: "finally">
+	|<THROW: "throw">
+	|<FUNCTION: "function">
+	|<SET: "set">
+	|<GET: "get">
 }
 
 /**	POO */
-TOKEN: 
-{
-	<CLASE:  "class">
-	|<HERENCIA: "extends">
-	|<INTERFACE: "interface">	
+TOKEN:  {
+	<CLASS:  "class">
+	|<EXTENDS: "extends">
+	|<INTERFACE: "interface">
+	|<IMPLEMENTS: "implements">
 }
 
 /** MODIFICADORES DE ACCESO */
@@ -57,12 +62,13 @@ TOKEN: {
 
 TOKEN: /**ESTRUCTURAS CICLICAS Y CONDICIONALES*/
 {
-	<SI:  "if">
+	<IF:  "if">
 	|<ELSE:  "else">
 	|<FOR:  "for">
 	|<FOREACH:  "foreach">
 	|<DO:  "do">
 	|<WHILE:  "while">
+	|<CONTINUE: "continue">
 	|<SWITCH:  "switch">
 	|<CASE:  "case">
 	|<BREAK:  "break">

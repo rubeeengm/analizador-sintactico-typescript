@@ -2,7 +2,7 @@
 
 rm -r *.class
 rm -r *.java
-javacc ipb.jj
+javacc Analizador.jj
 javac *.java
 
 
