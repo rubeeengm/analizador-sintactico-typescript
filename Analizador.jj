@@ -2,41 +2,36 @@ PARSER_BEGIN(Analizador)
 	import java.io.*;
 	import java.lang.*;
 	import java.util.*;
-	import javax.swing.*;
 
 	public class Analizador{
 		static int error = 0;
 		static int linea = 1;
 		static String errores = "";
+		static PrintWriter lexico;
+		static PrintWriter sintactico;
 		
-		public static void main(String args[]) throws ParseException {
-			FileWriter fichero = null;
-			PrintWriter printWriter = null;
-
-			 try{
+		public static void main(String args[]) 
+			throws ParseException, FileNotFoundException, UnsupportedEncodingException {
+		
+			try{
 				Analizador analizador = new Analizador(System.in);
-				analizador.Programa();
+				lexico = new PrintWriter("lexico.txt","UTF-8");
+				analizador.lexico.println("PAR ORDENADO\n[TIPO---->VALOR]\n");
+
+				sintactico = new PrintWriter("sintactico.txt","UTF-8");
+
+				analizador.programa();
+				lexico.close();
 
 				if (error <= 0) {
-					System.out.println("**Compilaci\u00F3n \u00C9xitosa**");
+					analizador.lexico.println("**Compilaci\u00F3n \u00C9xitosa**");
 				} else {
-					fichero = new FileWriter("./salida.txt");
-					printWriter = new PrintWriter(fichero);
-
-					printWriter.println("*N\u00FAmero de Errores: " + error + "*");
-					printWriter.println(errores);
+					analizador.sintactico.println("*N\u00FAmero de Errores: " + error + "*");
+					analizador.sintactico.println(errores);
+					sintactico.close();
 				}
 			} catch(ParseException e){
-				System.out.println(e.getMessage());
-				System.out.println("Analizador: se han encontrado errores en el analisis");
-			} finally {
-				try {
-					if (null != fichero) {
-						fichero.close();
-					} 
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+				lexico.println(e.getMessage() + "Se han encontrado errores en el programa");
 			}
 		}
 	}
@@ -44,125 +39,220 @@ PARSER_END(Analizador)
 
 /**PALABRAS RESERVADAS*/
 TOKEN:  {
-	<NEW:  "new ">
-	|<LET: "let">
-	|<VAR: "var">
-	|<CONSTRUCTOR: "constructor">
-	|<THIS: "this">	
-	|<CONSOLELOG: "console.log">
-	|<TRY: "try">
-	|<CATCH: "catch">
-	|<FINALLY: "finally">
-	|<THROW: "throw">
-	|<FUNCTION: "function">
+	<NEW:  "new "> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<LET: "let"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<VAR: "var"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<CONST: "const"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<CONSTRUCTOR: "constructor"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<THIS: "this"> {Analizador.lexico.println("PALABRA RESERVADA ---->" + image);}
+	|<CONSOLELOG: "console.log"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<TRY: "try"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<CATCH: "catch"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<FINALLY: "finally"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<THROW: "throw"> {Analizador.lexico.println("PALABRA RESERVADA ---->" + image);}
+	|<FUNCTION: "function"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
 	|<SET: "set">
 	|<GET: "get">
 }
 
 /**	POO */
 TOKEN:  {
-	<CLASS:  "class">
-	|<EXTENDS: "extends">
-	|<INTERFACE: "interface">
-	|<IMPLEMENTS: "implements">
+	<CLASS:  "class"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<EXTENDS: "extends"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<INTERFACE: "interface"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<IMPLEMENTS: "implements"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
 }
 
 /** MODIFICADORES DE ACCESO */
 TOKEN: {
-	<PUBLIC: "public">
-	|<PRIVATE: "private">
-	|<PROTECTED: "protected">
-}
-
-TOKEN: /**ESTRUCTURAS CICLICAS Y CONDICIONALES*/
-{
-	<IF:  "if">
-	|<ELSE:  "else">
-	|<FOR:  "for">
-	|<FOREACH:  "foreach">
-	|<DO:  "do">
-	|<WHILE:  "while">
-	|<CONTINUE: "continue">
-	|<SWITCH:  "switch">
-	|<CASE:  "case">
-	|<BREAK:  "break">
-	|<DEFAUL:  "default">
+	<PUBLIC: "public"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<PRIVATE: "private"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
+	|<PROTECTED: "protected"> {Analizador.lexico.println("PALABRA RESERVADA ----> " + image);}
 }
 
 /**TIPOS DE DATOS*/
-TOKEN:
-{
-	<BOOLEAN: "boolean">
-	|<ENTERO:  "number">
-	|<STRING: "string">
-	|<ANY: "any">
-	|<VOID: "void">
-	|<ARRAY: "Array">
-	|<UNDEFINED: "undefined">
-	|<NULL: "null">
-	|<ENUM: "enum">
-	|<OBJECT: "object">
+TOKEN: {
+	<BOOLEAN: "boolean"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<ENTERO:  "number"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<STRING: "string"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<ANY: "any"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<VOID: "void"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<ARRAY: "Array"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<UNDEFINED: "undefined"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<NULL: "null"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<ENUM: "enum"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
+	|<OBJECT: "object"> {Analizador.lexico.println("TIPO DE DATO ----> " + image);}
 }
 
 /**OPERADORES LOGICOS Y ARITMETICOS*/
-TOKEN:
-{
-	<SUMA:  "+">
-	|<RESTA:  "-">
-	|<MULTIPLIC:  "*">
-	|<DIVIS:  "/">
-	|<MODULO:  "%">
-	|<AND:  "&&">
-	|<OR:  "||">
-	|<INCREMENTAR:  "++">
-	|<DECREMENTAR:  "--">
+TOKEN: {
+	<SUMA:  "+"> {Analizador.lexico.println("OPERADOR ARITMETICO ----> " + image);}
+	|<RESTA:  "-"> {Analizador.lexico.println("OPERADOR ARITMETICO ----> " + image);}
+	|<MULTIPLIC:  "*"> {Analizador.lexico.println("OPERADOR ARITMETICO ----> " + image);}
+	|<DIVIS:  "/"> {Analizador.lexico.println("OPERADOR ARITMETICO ----> " + image);}
+	|<MODULO:  "%"> {Analizador.lexico.println("OPERADOR ARITMETICO ----> " + image);}
+	|<AND:  "&&"> {Analizador.lexico.println("OPERADOR LOGICO ----> " + image);}
+	|<OR:  "||"> {Analizador.lexico.println("OPERADOR LOGICO ----> " + image);}
+	|<INCREMENTAR:  "++"> {Analizador.lexico.println("OPERADOR ARITMETICO ----> " + image);}
+	|<DECREMENTAR:  "--"> {Analizador.lexico.println("OPERADOR ARITMETICO ----> " + image);}
 }
 
 /**DELIMITADORES Y OPERADORES COMPARATIVOS*/
-TOKEN:
-{
-	<PARENT_IZQ:  "(">
-	|<PARENT_DER:  ")">
-	|<LLAVE_IZQ:  "{">
-	|<LLAVE_DER:  "}">
-	|<CORCH_IZQ:  "[">
-	|<CORCH_DER:  "]">
-	|<PUNTO_COMA:  ";">
-	|<DOS_PUNTOS:  ":">
-	|<PUNTO:  ".">
-	|<COMA:  ",">
-	|<ASIGNACION:  "=">
-	|<IGUAL:  "==">
-	|<MAYOR:  ">">
-	|<MENOR:  "<">
-	|<MAYOR_IGUAL:  ">=">
-	|<MENOR_IGUAL:  "<=">
-	|<DIF_QUE:  "!=">
+TOKEN: {
+	<PARENT_IZQ: "("> {Analizador.lexico.println("ABRIR PARENTESIS ----> " + image);}
+	|<PARENT_DER: ")"> {Analizador.lexico.println("CERRAR PARENTESIS ----> " + image);}
+	|<LLAVE_IZQ: "{"> {Analizador.lexico.println("ABRIR LLAVE ----> " + image);}
+	|<LLAVE_DER: "}"> {Analizador.lexico.println("CERRAR LLAVE ----> " + image);}
+	|<CORCH_IZQ: "["> {Analizador.lexico.println("ABRIR CORCHETES ----> " + image);}
+	|<CORCH_DER: "]"> {Analizador.lexico.println("CERRAR CORCHETES ----> " + image);}
+	|<PUNTO_COMA: ";"> {Analizador.lexico.println("PUNTO Y COMA ----> " + image);}
+	|<DOS_PUNTOS: ":"> {Analizador.lexico.println("DOS PUNTOS ----> " + image);}
+	|<PUNTO: "."> {Analizador.lexico.println("PUNTO ----> " + image);}
+	|<COMA: ","> {Analizador.lexico.println("COMA ----> " + image);}
+	|<ASIGNACION:  "="> {Analizador.lexico.println("OPERADOR ASIGNACION ----> " + image);}
+	|<IGUAL: "=="> {Analizador.lexico.println("OPERADOR RELACIONAL ----> " + image);}
+	|<MAYOR: ">"> {Analizador.lexico.println("OPERADOR RELACIONAL ----> " + image);}
+	|<MENOR: "<"> {Analizador.lexico.println("OPERADOR RELACIONAL ----> " + image);}
+	|<MAYOR_IGUAL: ">="> {Analizador.lexico.println("OPERADOR RELACIONAL ----> " + image);}
+	|<MENOR_IGUAL: "<="> {Analizador.lexico.println("OPERADOR RELACIONAL ----> " + image);}
+	|<DIF_QUE:  "!="> {Analizador.lexico.println("OPERADOR RELACIONAL ----> " + image);}
+}
+
+/**ESTRUCTURAS CICLICAS Y CONDICIONALES*/
+TOKEN: {
+	<IF: "if"> {Analizador.lexico.println("SETENCIA IF CONDICIONAL ----> " + image);}
+	| <ELSE: "else"> {Analizador.lexico.println("SETENCIA ELSE CONDICIONAL ----> " + image);}
+	| <FOR: "for"> {Analizador.lexico.println("SETENCIA FOR CICLO ----> " + image);}
+	| <FOREACH: "foreach"> {Analizador.lexico.println("SETENCIA FOREACH CICLO ----> " + image);}
+	| <DO: "do"> {Analizador.lexico.println("SETENCIA DO CICLO ----> " + image);}
+	| <WHILE: "while"> {Analizador.lexico.println("SETENCIA WHILE CICLO ----> " + image);}
+	| <CONTINUE: "continue"> {Analizador.lexico.println("SETENCIA CONTINUE ----> " + image);}
+	| <SWITCH: "switch">{Analizador.lexico.println("SETENCIA SWITCH CONDICIONAL ----> " + image);}
+	| <CASE: "case"> {Analizador.lexico.println("SETENCIA CASE ----> " + image);}
+	| <BREAK: "break"> {Analizador.lexico.println("SETENCIA BREAK ----> " + image);}
+	| <DEFAUL: "default"> {Analizador.lexico.println("SETENCIA DEFAULT ----> " + image);}
 }
 
 /**NUMEROS Y CADENAS*/
-TOKEN:
-{
+TOKEN: {
    <NUMERO: (["0"-"9"])+ >
-   |<NUMERO_DECIMAL: (["0"-"9"])+ "." (["0"-"9"])* >
-   |<COMILLAS: "\"" >
-   |<IDENTIFICADOR: ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"] | ("\u00e1") | ("\u00e9") | ("\u00ed") | ("\u00f3") | ("\u00fa") 
-   |("\u00c1") | ("\u00c9") | ("\u00cd") | ("\u00d3") | ("\u00da"))* >
-   |<CADENA: <COMILLAS> ["a"-"z","A"-"Z","0"-"9"," "]((["a"-"z","A"-"Z","0"-"9"," ",":",";",".","ñ"])|("¿")|("?")|("#")|("+")|("-")|("*")|("~")|("%")|("=")|("{")|("}")|("/")|("!")|("¡")|
-   ("<")|(">")|("\u00e1")|("\u00e9")|("\u00ed")|("\u00f3")|("\u00fa")|("\u00c1")|("\u00c9")|("\u00cd")|("\u00d3")|("\u00da"))*<COMILLAS> >
-   |<CARACTER :<COMILLAS>["a"-"z","A"-"Z","0"-"9"]<COMILLAS>>
-   |<BOOLEANO : "true" | "false">
-   
+   | <NUMERO_DECIMAL: (["0"-"9"])+ "." (["0"-"9"])* >
+   | <COMILLAS: "\"" >
+   | <IDENTIFICADOR: ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"] | ("\u00e1") | ("\u00e9") | ("\u00ed") | ("\u00f3") | ("\u00fa") 
+   | ("\u00c1") | ("\u00c9") | ("\u00cd") | ("\u00d3") | ("\u00da"))* > {Analizador.lexico.println("IDENTIFICADOR----> " + image);}
+   | <CADENA: <COMILLAS> ["a"-"z","A"-"Z","0"-"9"," "]((["a"-"z","A"-"Z","0"-"9"," ",":",";",".","ñ"])|("¿")|("?")|("#")|("+")|("-")|("*")|("~")|("%")|("=")|("{")|("}")|("/")|("!")|("¡")|
+   ("<")|(">")|("\u00e1")|("\u00e9")|("\u00ed")|("\u00f3")|("\u00fa")|("\u00c1")|("\u00c9")|("\u00cd")|("\u00d3")|("\u00da"))*<COMILLAS>>
+   | <CARACTER: <COMILLAS>["a"-"z","A"-"Z","0"-"9"]<COMILLAS>>
+   | <BOOLEANO: "true" | "false">  
 }
 
 /*TABLA DE ERRORES LEXICOS*/
-TOKEN:
-{													  
-	<ERROR: ("&"|"%"|"¡"|"!"|"¬"|"#"|"$"|"%"|"?"|"¿"|"^")> {System.out.println(" " );}
+TOKEN: {
+	<ERROR: ("&"|"%"|"¡"|"!"|"¬"|"#"|"$"|"%"|"?"|"¿"|"^")>
 }
 
 /**ERRORES QUE SALTA DEL ANÁLISIS LÉXICO*/
-SKIP:
-{
+SKIP: {
 	" " | "\r" | "\t" | "\n"
+}
+
+//OPERADORES ARITMETICOS
+void operadoresAritmeticos() : {} {
+	<SUMA> | <RESTA> | <MULTIPLIC> | <DIVIS> | <MODULO>
+}
+
+//OPERADORES DE PRE - INCREMENTO, DECREMENTO, POST - INCREMENTO, DECREMENTO
+void operadoresPostPreIncrementoDecremento() : {} {
+	((<DECREMENTAR> | <INCREMENTAR>) <IDENTIFICADOR>) | (<IDENTIFICADOR> (<DECREMENTAR> | <INCREMENTAR>))
+}
+
+//OPERADORES RELACIONALES
+void operadoresRelacionales() : {} {
+	<IGUAL> | <MAYOR> | <MENOR> | <MAYOR_IGUAL> | <MENOR_IGUAL> | <DIF_QUE>
+}
+
+//OPERADORES LOGICOS
+void operadoresLogicos() : {} {
+	<AND> | <OR>
+}
+
+//TIPOS DE DATO
+void tipoDato() : {} {
+	<BOOLEAN> | <ENTERO> | <STRING> | <ANY> | <VOID> | <ARRAY> | <UNDEFINED> | <NULL>
+	| <ENUM> | <OBJECT>
+}
+
+// LLAVE DEECHA
+void llaveDerecha(int s) : {} {
+	try{
+		 <LLAVE_DER>
+	} catch(ParseException ex) {
+		error++;
+		
+		if(s == 0)
+	  		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha '}' de la funcion\n";
+		else if(s == 1)
+      		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha '}' de la clase\n";
+		else if(s == 2)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha '}' del condicional IF\n";
+		else if(s == 3)
+			errores += "error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha '}' de condicional ELSE\n";
+		else if(s == 4)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha '}' de condicional SWITCH\n";
+		else if(s == 5)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha '}' del ciclo FOR\n";
+		else if(s == 6)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha del condicional WHILE\n"; 
+		else if(s == 7)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine + " Columna: "+token.beginColumn + ". Falta cerrar la llave derecha del ciclo DO\n";
+	}
+}
+
+void puntoComa(int s) : {} {
+	try{
+		<PUNTO_COMA>
+	}catch(ParseException ex){
+		error++;
+
+		if(s == 0)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la declaracion de variable\n";
+		else if(s == 1)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la asignacion de variable\n";
+		else if(s == 2)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la sentencia break";
+		else if(s == 3)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en la sentencia cotinue";
+		else if(s == 4)
+			errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Falta el punto y coma ';' en el do while";
+	}
+}
+
+void declaracion() : {} {
+	try{
+		(<LET> | <VAR>) <IDENTIFICADOR> (<DOS_PUNTOS> tipoDato())* puntoComa(0)
+	}catch(ParseException ex){
+		error++;
+		errores += "Error sint\u00e1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Hubo un error en la estructura de la declaracion de variables\n";
+		Token token;
+
+		do{
+			token = getNextToken();
+		} while(token.kind != EOF && token.kind != PUNTO_COMA);
+	}
+}
+
+void programa() : {
+	errores = "";
+} {
+	try {
+		(declaracion())*
+	} catch(ParseException ex) {
+		error++;
+		errores += "Error sint\u00E1ctico en la linea: " + ex.currentToken.beginLine +" Columna: "+token.beginColumn+". Hubo un error en la estructura del PROGRAMA.\n";
+		Token token;
+
+		do{
+			token = getNextToken();
+		} while(token.kind != EOF && token.kind != LLAVE_DER);
+	}	
 }
