@@ -235,6 +235,7 @@ void llaveDerecha(int codigoError) : {} {
 	}
 }
 
+//PUNTO Y COMA
 void puntoComa(int codigoError) : {} {
 	try {
 		<PUNTO_COMA>
@@ -275,9 +276,11 @@ void puntoComa(int codigoError) : {} {
 	}
 }
 
-void declaracion() : {} {
+//declaracion de una variable con tipo de dato opcional
+void variable() : {} {
 	try {
-		(<LET> | <VAR>) <IDENTIFICADOR> (<DOS_PUNTOS> tipoDato())* puntoComa(0)
+		LOOKAHEAD(2) <IDENTIFICADOR> <DOS_PUNTOS> tipoDato()
+		| <IDENTIFICADOR>
 	} catch(ParseException ex){
 		Token token;
 		cantidadErrores++;
@@ -286,7 +289,24 @@ void declaracion() : {} {
 							+ ex.currentToken.beginLine + " Columna: " + ex.currentToken.beginColumn
 							+ ". Hubo un error en la estructura de la declaracion de variables\n";
 		
-		do{
+		do {
+			token = getNextToken();
+		} while(token.kind != EOF && token.kind != PUNTO_COMA);
+	}
+}
+
+void declaracionVariables() : {} {
+	try {
+		(<LET> | <VAR>) variable() (<COMA> variable())*
+	} catch(ParseException ex){
+		Token token;
+		cantidadErrores++;
+
+		mensajesError += "Error sintactico en la linea: " 
+							+ ex.currentToken.beginLine + " Columna: " + ex.currentToken.beginColumn
+							+ ". Hubo un error en la estructura de la declaracion de variables\n";
+		
+		do {
 			token = getNextToken();
 		} while(token.kind != EOF && token.kind != PUNTO_COMA);
 	}
@@ -296,7 +316,7 @@ void programa() : {
 	mensajesError = "";
 } {
 	try {
-		(declaracion())*
+		(declaracionVariables()<PUNTO_COMA>)*
 	} catch(ParseException ex) {
 		Token token;
 		cantidadErrores++;
