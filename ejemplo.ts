@@ -1,2 +1,2 @@
 let hola;
-let le : string;
+let le : string, hol1 : number;
